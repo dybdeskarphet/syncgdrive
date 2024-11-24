@@ -60,13 +60,11 @@ def get_current_ssid():
     else:
         eprint("ERR", "No interface available")
 
-    eprint(current_ssid)
-
-    return None
+    return current_ssid
 
 
 def main():
-    get_current_ssid()
+    eprint(get_current_ssid())
 
 
 if __name__ == "__main__":
