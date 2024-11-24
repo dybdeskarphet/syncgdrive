@@ -1,5 +1,33 @@
 import iwlib
 import psutil
+import yaml
+import os
+from termcolor import colored
+
+
+def eprint(msg="unknown", code="OK"):
+    color = "green"
+    exit_code = 0
+
+    match code:
+        case "OK":
+            color = "green"
+        case "SUCCESS":
+            color = "blue"
+            exit_code = 0
+        case "ERR":
+            color = "red"
+            exit_code = 1
+        case "PERM":
+            color = "red"
+            exit_code = 126
+        case _:
+            color = "red"
+            exit_code = 1
+
+    print(colored("syncgdrive:", color), msg)
+    if code != "OK":
+        exit(exit_code)
 
 
 def get_current_ssid():
@@ -23,14 +51,16 @@ def get_current_ssid():
     if up_interfaces:
         for interface in up_interfaces:
             if interface.lower().startswith(ethernet_patterns):
-                print("Ethernet is connected")
+                eprint("Ethernet is connected")
             else:
                 current_ssid = iwlib.get_iwconfig(up_interfaces[0])["ESSID"].decode(
                     "utf-8"
                 )
                 break
+    else:
+        eprint("ERR", "No interface available")
 
-        print(current_ssid)
+    eprint(current_ssid)
 
     return None
 
