@@ -25,6 +25,7 @@ def get_current_ssid():
         for interface in up_interfaces:
             if interface.lower().startswith(ethernet_patterns):
                 eprint("Ethernet is connected")
+                return {"connection_type": "ethernet", "ssid": current_ssid}
             else:
                 current_ssid = iwlib.get_iwconfig(up_interfaces[0])["ESSID"].decode(
                     "utf-8"
@@ -33,4 +34,4 @@ def get_current_ssid():
     else:
         eprint("ERR", "No interface available")
 
-    return current_ssid
+    return {"connection_type": "wireless", "ssid": current_ssid}

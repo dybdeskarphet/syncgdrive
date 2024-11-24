@@ -4,7 +4,7 @@ from network import get_current_ssid
 
 
 def main():
-    eprint(get_current_ssid())
+    eprint(get_current_ssid()["ssid"])
 
 
 if __name__ == "__main__":
