@@ -1,20 +1,6 @@
 from rclone_python import rclone
 from get_config import get_selected_remote
-from internal import eprint
-
-
-def check_rclone_and_remote():
-    if not rclone.is_installed:
-        eprint("Rclone is not installed on your system", "ERR")
-
-    r = ""
-
-    if get_selected_remote() is not None:
-        r = get_selected_remote() + ":"
-
-    if not r in rclone.get_remotes():
-        eprint("Selected remote is not in your remotes list", "ERR")
-    else:
+from utils import eprint
 
 
 def copy_command(source, dest):
@@ -25,7 +11,6 @@ def copy_command(source, dest):
     # 3. If file, use base dir as dest. If folder use itself.
     # 4. If files and folders are only home folder, dest dir starts from home folder
     # 5. If there are files and folders from root dir except HOME, dest dir starts from root
-    check_rclone_and_remote()
 
     rclone.copy(
         source,
@@ -43,8 +28,6 @@ def copy_command(source, dest):
 
 
 def sync_command(source, dest):
-    check_rclone_and_remote()
-
     rclone.sync(
         source,
         dest,
