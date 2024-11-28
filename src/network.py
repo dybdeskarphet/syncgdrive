@@ -1,6 +1,6 @@
 import psutil
 import iwlib
-from internal import eprint
+from utils import eprint
 from get_config import get_trusted_networks
 
 
@@ -38,11 +38,11 @@ def get_current_ssid():
     return {"connection_type": "wireless", "ssid": current_ssid}
 
 
-def is_trusted_ssid():
-    if get_current_ssid()["ssid"] in get_trusted_networks():
+def is_trusted_network():
+    if (
+        get_current_ssid()["ssid"] in get_trusted_networks()
+        or get_current_ssid()["connection_type"] == "ethernet"
+    ):
         return True
     else:
         return False
-
-
-print(is_trusted_ssid())
