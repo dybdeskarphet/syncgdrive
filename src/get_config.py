@@ -44,3 +44,8 @@ def get_selected_remote():
 def get_backup_list():
     cfg = load_config()
     return cfg.get("backup_list")
+
+
+def get_remote_root():
+    cfg = load_config()
+    return cfg.get("target_root")
