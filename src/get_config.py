@@ -1,6 +1,7 @@
 import yaml
-from internal import eprint
+from utils import eprint
 from os import environ, path, makedirs
+
 
 def load_config():
     config_home = ""
@@ -38,3 +39,8 @@ def get_trusted_networks():
 def get_selected_remote():
     cfg = load_config()
     return cfg.get("selected_remote")
+
+
+def get_backup_list():
+    cfg = load_config()
+    return cfg.get("backup_list")
