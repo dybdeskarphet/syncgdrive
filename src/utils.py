@@ -6,6 +6,8 @@ def get_home():
     home = environ.get("HOME")
     if home is not None:
         return home
+    else:
+        eprint("User doesn't have a home directory.", "ERR")
 
 
 def eprint(msg="unknown", code="OK"):
