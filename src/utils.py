@@ -1,4 +1,11 @@
 from termcolor import colored
+from os import environ
+
+
+def get_home():
+    home = environ.get("HOME")
+    if home is not None:
+        return home
 
 
 def eprint(msg="unknown", code="OK"):
@@ -8,6 +15,8 @@ def eprint(msg="unknown", code="OK"):
     match code:
         case "OK":
             color = "green"
+        case "WARN":
+            color = "yellow"
         case "SUCCESS":
             color = "blue"
             exit_code = 0
@@ -22,5 +31,5 @@ def eprint(msg="unknown", code="OK"):
             exit_code = 1
 
     print(colored("syncgdrive:", color), msg)
-    if code != "OK":
+    if exit_code != 0:
         exit(exit_code)
