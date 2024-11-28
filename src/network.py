@@ -42,7 +42,7 @@ def is_trusted_ssid():
     if get_current_ssid()["ssid"] in get_trusted_networks():
         return True
     else:
-        False
+        return False
 
 
 print(is_trusted_ssid())
