@@ -46,6 +46,16 @@ def get_backup_list():
     return cfg.get("backup_list")
 
 
+def get_sync_list():
+    cfg = load_config()
+    return cfg.get("sync_list")
+
+
 def get_remote_root():
     cfg = load_config()
-    return cfg.get("target_root")
+    target_root = cfg.get("target_root")
+    if target_root is not None:
+        if target_root.endswith("/"):
+            return target_root.removesuffix("/")
+    else:
+        return None
