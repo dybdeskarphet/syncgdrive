@@ -10,6 +10,7 @@ from network import is_trusted_network
 from os import path
 import re
 from rclone_python import rclone
+import notify2
 
 
 def replace_home(input_path):
@@ -58,6 +59,7 @@ def main():
     non_existent_paths = (
         backup_list["non_existent_paths"] + sync_list["non_existent_paths"]
     )
+    notify2.init("syncgdrive")
 
     # Bail out if network is not trusted
     if not is_trusted_network():
@@ -74,9 +76,16 @@ def main():
 
     # Warn the user if there are invalid paths
     if non_existent_paths:
+        non_existent_string = "\n".join(non_existent_paths)
         eprint(f"Below paths doesn't exist:", "WARN")
-        print(*non_existent_paths, sep="\n")
+        print(non_existent_string)
         print(end="\n")
+        non_existent_notify = notify2.Notification(
+            "syncgdrive: Below paths doesn't exist",
+            f"{non_existent_string}",
+            "folder-sync",
+        )
+        non_existent_notify.show()
 
     for item in backup_list["processed_array"]:
         copy_command(item["source"], f"{remote_prefix}{item["dest"]}")
