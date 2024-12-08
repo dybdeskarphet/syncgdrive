@@ -1,43 +1,58 @@
+import asyncio
 from rclone_python import rclone
-from get_config import get_selected_remote
+from get_config import get_remote_root, get_selected_remote
 from utils import eprint
+import subprocess
+
+remote = get_selected_remote()
+remote_root = get_remote_root()
+remote_prefix = ""
+
+# Define the source dir inside the target remote
+if remote is not None:
+    remote = remote + ":"
+
+if not remote in rclone.get_remotes():
+    eprint("Selected remote is not in your remotes list", "ERR")
+else:
+    remote_prefix = f"{remote}{remote_root}"
 
 
-def copy_command(source, dest):
-    # TODO:
-    # 1. Check rclone
-    # 2. Get remote_dir from get_config
-    # 2. Check if soruce is file or folder
-    # 3. If file, use base dir as dest. If folder use itself.
-    # 4. If files and folders are only home folder, dest dir starts from home folder
-    # 5. If there are files and folders from root dir except HOME, dest dir starts from root
+async def copy_command(source, dest):
+    def run_copy():
+        rclone.copy(
+            source,
+            f"{remote_prefix}{dest}",
+            show_progress=False,
+            args=[
+                "--transfers 30",
+                "--checkers 8",
+                "--contimeout 60s",
+                "--timeout 300s",
+                "--retries 3",
+                "--low-level-retries 10",
+            ],
+        )
 
-    rclone.copy(
-        source,
-        dest,
-        show_progress=True,
-        args=[
-            "--transfers 30",
-            "--checkers 8",
-            "--contimeout 60s",
-            "--timeout 300s",
-            "--retries 3",
-            "--low-level-retries 10",
-        ],
-    )
+    eprint(f"Copying '{source}' to '{remote_prefix}{dest}'")
+    await asyncio.to_thread(run_copy)
 
 
-def sync_command(source, dest):
-    rclone.sync(
-        source,
-        dest,
-        show_progress=True,
-        args=[
-            "--transfers 30",
-            "--checkers 8",
-            "--contimeout 60s",
-            "--timeout 300s",
-            "--retries 3",
-            "--low-level-retries 10",
-        ],
-    )
+async def sync_command(source, dest):
+    def run_sync():
+        rclone.sync(
+            source,
+            f"{remote_prefix}{dest}",
+            show_progress=False,
+            args=[
+                "--transfers 30",
+                "--checkers 8",
+                "--contimeout 60s",
+                "--timeout 300s",
+                "--retries 3",
+                "--low-level-retries 10",
+            ],
+        )
+
+    eprint(f"Synchronizing '{source}' to '{remote_prefix}{dest}'")
+    await asyncio.to_thread(run_sync)
