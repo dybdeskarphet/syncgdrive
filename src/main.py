@@ -1,8 +1,7 @@
 from backup import copy_command, sync_command
+import backup
 from get_config import (
     get_backup_list,
-    get_remote_root,
-    get_selected_remote,
     get_sync_list,
 )
 from utils import eprint, get_home
@@ -11,6 +10,7 @@ from os import path
 import re
 from rclone_python import rclone
 import notify2
+import asyncio
 
 
 def replace_home(input_path):
@@ -47,15 +47,24 @@ def process_rclone_array(array, list_name="the"):
     }
 
 
+async def backup_and_sync_concurrently(backup_processed_array, sync_processed_array):
+    tasks = []
+
+    for item in backup_processed_array:
+        tasks.append(copy_command(item["source"], item["dest"]))
+
+    for item in sync_processed_array:
+        tasks.append(sync_command(item["source"], item["dest"]))
+
+    await asyncio.gather(*tasks)
+
+
 def main():
     if not rclone.is_installed:
         eprint("Rclone is not installed on your system", "ERR")
 
     backup_list = process_rclone_array(get_backup_list(), "backup")
     sync_list = process_rclone_array(get_sync_list(), "sync")
-    remote = get_selected_remote()
-    remote_root = get_remote_root()
-    remote_prefix = ""
     non_existent_paths = (
         backup_list["non_existent_paths"] + sync_list["non_existent_paths"]
     )
@@ -64,15 +73,6 @@ def main():
     # Bail out if network is not trusted
     if not is_trusted_network():
         eprint("Connected network is not inside trusted networks", "ERR")
-
-    # Define the source dir inside the target remote
-    if remote is not None:
-        remote = remote + ":"
-
-    if not remote in rclone.get_remotes():
-        eprint("Selected remote is not in your remotes list", "ERR")
-    else:
-        remote_prefix = f"{remote}{remote_root}"
 
     # Warn the user if there are invalid paths
     if non_existent_paths:
@@ -87,11 +87,11 @@ def main():
         )
         non_existent_notify.show()
 
-    for item in backup_list["processed_array"]:
-        copy_command(item["source"], f"{remote_prefix}{item["dest"]}")
-
-    for item in sync_list["processed_array"]:
-        sync_command(item["source"], f"{remote_prefix}{item["dest"]}")
+    asyncio.run(
+        backup_and_sync_concurrently(
+            backup_list["processed_array"], sync_list["processed_array"]
+        )
+    )
 
 
 if __name__ == "__main__":
